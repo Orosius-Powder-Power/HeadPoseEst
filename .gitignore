@@ -1,0 +1,55 @@
+# Python caches and local environments
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+build/
+dist/
+*.egg-info/
+
+# 6DRepNet local runtime artifacts
+6DRepNet/.venv/
+6DRepNet/venv/
+6DRepNet/datasets/
+6DRepNet/checkpoints/
+6DRepNet/output/
+6DRepNet/logs/
+6DRepNet/runs/
+6DRepNet/wandb/
+
+# Large model/checkpoint files
+*.pth
+*.pt
+*.tar
+*.ckpt
+*.onnx
+
+# Large or generated dataset files
+*.npz
+*.npy
+*.h5
+*.hdf5
+*.mat
+*.zip
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# Generated media and demo outputs
+*.avi
+*.mp4
+*.mov
+*.mkv
+*.webm
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

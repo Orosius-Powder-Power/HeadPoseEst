@@ -15,7 +15,7 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description='Create filenames list txt file from datasets root dir.'
         ' For head pose analysis.')
-    parser.add_argument('--root_dir = ', 
+    parser.add_argument('--root_dir',
         dest='root_dir', 
         help='root directory of the datasets files', 
         default='./datasets/300W_LP', 
