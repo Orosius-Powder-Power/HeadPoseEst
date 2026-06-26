@@ -136,8 +136,15 @@ Download and place these files on the server:
      bash run_6drepnet_reproduction.sh make-aflw-list
 
 4. BIWI
-   Download the BIWI Kinect Head Pose Database from ETH:
+   The author README points to an old ETH page:
      https://icu.ee.ethz.ch/research/datsets.html
+   As of 2026-06-26 this page may return "Page not found". This is usually an
+   upstream ETH page move/removal, not a local download mistake. Also try:
+     https://icu.ee.ethz.ch/research/datasets.html
+   Search terms:
+     BIWI Kinect Head Pose Database
+     BIWI head pose dataset
+
    Preprocess it to cropped face images in npz format. The author README points
    to FSA-Net preprocessing scripts:
      https://github.com/shamangary/FSA-Net/blob/master/data/TYY_create_db_biwi.py

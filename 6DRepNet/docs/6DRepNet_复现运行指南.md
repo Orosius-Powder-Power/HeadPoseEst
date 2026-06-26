@@ -105,11 +105,27 @@ http://www.cbsr.ia.ac.cn/users/xiangyuzhu/projects/3DDFA/main.htm
 
 ### 4.4 BIWI
 
-从 ETH 下载 BIWI Kinect Head Pose Database：
+作者 README 给出的 BIWI 下载入口是 ETH 的旧页面：
 
 ```text
 https://icu.ee.ethz.ch/research/datsets.html
 ```
+
+截至 2026-06-26，这个页面在浏览器中可能返回 ETH 的 `Page not found`。这通常不是网络问题，而是 ETH 网站改版或旧页面被移动导致的；另外原始链接里的 `datsets.html` 本身也疑似是 `datasets.html` 的拼写错误。
+
+建议按以下顺序处理：
+
+1. 先尝试修正拼写后的页面，或在 ETH/Google 中搜索关键词：
+
+```text
+https://icu.ee.ethz.ch/research/datasets.html
+BIWI Kinect Head Pose Database
+BIWI head pose dataset
+```
+
+2. 如果 ETH 页面仍然不可访问，记录“官方数据集链接失效，访问日期为 2026-06-26”，并优先完成 AFLW2000 的复现。报告中可以把 BIWI 列为因官方源失效而未完成下载的数据集，同时保留本仓库中的 `eval-biwi` 脚本，说明一旦取得 `BIWI.npz` 即可复跑。
+
+3. 如果课程必须提交两个数据集的运行结果，可向助教确认是否允许用作者代码支持的其他数据集替代，例如 AFW/AFLW，或者由课程/同学提供已下载的 BIWI 原始数据或预处理 `.npz`。不要把从非官方来源获取的大型数据文件提交到 git。
 
 作者 README 说明 BIWI 需要先用人脸检测器裁剪并保存为 `.npz`。可参考 FSA-Net 的预处理脚本：
 
