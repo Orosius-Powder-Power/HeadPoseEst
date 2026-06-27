@@ -55,3 +55,5 @@ Thumbs.db
 .vscode/
 
 command.txt
+~$*.docx
+6DRepNet/docs/~$*.docx
