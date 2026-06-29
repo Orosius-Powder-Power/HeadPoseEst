@@ -74,3 +74,34 @@ To compare every local checkpoint on AFLW2000:
 ```bash
 bash 6DRepNet/script/run_eval_aflw2000_all_checkpoints.sh
 ```
+
+## 3. Real Captured Video
+
+Run 6DRepNet on a locally captured head-pose video and save an annotated result video plus a per-frame CSV:
+
+```bash
+bash 6DRepNet/script/run_real_video.sh
+```
+
+Default input:
+
+```text
+6DRepNet/input/WIN_20260629_12_09_36_Pro.mp4
+```
+
+Outputs:
+
+```text
+6DRepNet/output/real_video/*_6drepnet_*.mp4
+6DRepNet/output/real_video/*_6drepnet_*.csv
+6DRepNet/logs/real_video_*.log
+```
+
+Useful overrides:
+
+```bash
+INPUT_VIDEO=6DRepNet/input/your_video.mp4 bash 6DRepNet/script/run_real_video.sh
+MAX_SIZE=960 SCORE_THRESH=0.90 bash 6DRepNet/script/run_real_video.sh
+```
+
+`MAX_SIZE` controls the long side used for processing and output. Lower values run faster; higher values preserve more detail. `SCORE_THRESH` controls the RetinaFace confidence threshold.

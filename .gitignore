@@ -17,6 +17,7 @@ dist/
 # 6DRepNet local runtime artifacts
 6DRepNet/.venv/
 6DRepNet/venv/
+6DRepNet/input/
 6DRepNet/datasets/
 6DRepNet/checkpoints/
 6DRepNet/output/
