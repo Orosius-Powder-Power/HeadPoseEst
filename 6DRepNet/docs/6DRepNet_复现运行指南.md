@@ -47,6 +47,7 @@ bash 6DRepNet/script/run_eval_aflw2000.sh
   script/
     run_demo.sh
     run_eval_aflw2000.sh
+    run_eval_aflw2000_all_checkpoints.sh
     demo_image.py
     eval_aflw2000.py
 ```
@@ -60,6 +61,7 @@ bash 6DRepNet/script/run_eval_aflw2000.sh
 | `script/run_demo.sh` | 任务 1 的一键脚本，默认跑 AFLW2000 单图 demo 并保存可视化结果 |
 | `script/demo_image.py` | 单图 demo 辅助脚本，复用作者模型和绘图函数 |
 | `script/run_eval_aflw2000.sh` | 任务 2 的一键脚本，评估 AFLW2000 |
+| `script/run_eval_aflw2000_all_checkpoints.sh` | 依次测试本地 `checkpoints/*.pth` 在 AFLW2000 上的表现 |
 | `script/eval_aflw2000.py` | AFLW2000 测试辅助脚本，复用作者模型、数据集和误差计算逻辑 |
 | `sixdrepnet/demo.py` | 作者原始摄像头实时 demo |
 | `sixdrepnet/test.py` | 作者原始评估脚本 |
@@ -71,15 +73,19 @@ bash 6DRepNet/script/run_eval_aflw2000.sh
 
 ## 4. 环境准备
 
-进入项目目录：
+推荐在仓库根目录 `HeadPoseEstimationExplore/` 下创建并使用虚拟环境：
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip setuptools wheel
+pip install -r 6DRepNet/requirements.txt
+```
+
+如果已经进入了 `6DRepNet/` 目录，则使用：
 
 ```bash
 cd 6DRepNet
-```
-
-如果还没有 Python 环境，可以创建虚拟环境：
-
-```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip setuptools wheel
@@ -93,6 +99,8 @@ pip install "git+https://github.com/elliottzheng/face-detection.git@master"
 ```
 
 本次默认的单图 demo 不依赖摄像头，也不强制依赖 `face_detection`。
+
+如果摄像头 demo 报 `No module named 'numpy.lib.function_base'`，这是原作者代码中无用的 NumPy 私有导入导致的新版 NumPy 兼容问题；本仓库已经删除该导入。重新运行 `DEMO_MODE=camera bash 6DRepNet/script/run_demo.sh` 即可。
 
 ## 5. 数据和权重
 
@@ -130,11 +138,13 @@ http://www.cbsr.ia.ac.cn/users/xiangyuzhu/projects/3DDFA/main.htm
 6DRepNet/datasets/AFLW2000/
 ```
 
-`script/eval_aflw2000.py` 会在缺少 `files.txt` 时自动扫描 `.jpg/.mat` 文件对并生成：
+作者原仓库的 `create_filename_list.py` 会过滤掉 yaw/pitch/roll 任一角度超过 ±99° 的样本。AFLW2000 原始数据有 2000 张图，按作者过滤规则实际参与 Table 1 统计的是 1969 张左右。为了和论文 Table 1 对齐，`script/eval_aflw2000.py` 会在缺少 filtered list 时自动生成：
 
 ```text
-6DRepNet/datasets/AFLW2000/files.txt
+6DRepNet/datasets/AFLW2000/files_filtered_99.txt
 ```
+
+不要用全量 2000 张样本直接算 Table 1，否则 MAE 会明显偏高。
 
 ## 6. 任务 1：跑通 demo
 
@@ -174,6 +184,38 @@ DEMO_MODE=camera bash 6DRepNet/script/run_demo.sh
 
 摄像头模式需要本机摄像头、OpenCV GUI 窗口和 `face_detection` 包。按 Esc 退出窗口。
 
+摄像头 demo 的常见失败点有两个：
+
+1. NumPy 兼容问题：如果出现 `No module named 'numpy.lib.function_base'`，说明运行到了作者原始代码中的旧私有导入。本仓库已经删除该导入，请重新拉取/保存代码后再运行。
+2. WSL 摄像头不可见：WSL 默认通常不能直接访问 Windows 摄像头。先确认设备是否存在：
+
+```bash
+ls /dev/video*
+```
+
+如果没有 `/dev/video0`，说明当前 WSL 没有接收到 Windows 摄像头设备。此时有两种路线：
+
+**路线 A：最快、最稳，使用 Windows 原生 Python/Anaconda 跑摄像头 demo。**
+
+Windows 原生 OpenCV 可以直接访问摄像头，不需要 WSL 摄像头直通。进入同一份项目目录后运行：
+
+```powershell
+cd path\to\HeadPoseEstimationExplore\6DRepNet
+python -m venv .venv-win
+.\.venv-win\Scripts\activate
+pip install -r requirements.txt
+pip install "git+https://github.com/elliottzheng/face-detection.git@master"
+python sixdrepnet\demo.py --gpu 0 --cam 0 --snapshot checkpoints\6DRepNet_300W_LP_AFLW2000.pth
+```
+
+**路线 B：继续在 WSL 跑，需要先把摄像头直通进 WSL。**
+
+在 Windows 管理员 PowerShell 中安装并使用 `usbipd-win`，把摄像头 USB 设备 attach 到 WSL；然后回到 WSL 确认 `ls /dev/video*` 能看到设备，再运行：
+
+```bash
+DEMO_MODE=camera bash 6DRepNet/script/run_demo.sh
+```
+
 ## 7. 任务 2：AFLW2000 测试
 
 运行：
@@ -191,6 +233,12 @@ NUM_WORKERS=2
 SNAPSHOT=6DRepNet/checkpoints/6DRepNet_300W_LP_AFLW2000.pth
 AFLW2000_DIR=6DRepNet/datasets/AFLW2000
 AFLW2000_LIST=6DRepNet/datasets/AFLW2000/files.txt
+```
+
+当前脚本实际默认使用：
+
+```text
+AFLW2000_LIST=6DRepNet/datasets/AFLW2000/files_filtered_99.txt
 ```
 
 如果显存不足，可以降低 batch size：
@@ -214,6 +262,13 @@ Yaw: x.xxxx, Pitch: x.xxxx, Roll: x.xxxx, MAE: x.xxxx
 Paper reference on AFLW2000: Yaw 3.63, Pitch 4.91, Roll 3.37, MAE 3.97
 ```
 
+本地已验证，使用 `6DRepNet_300W_LP_AFLW2000.pth` 和作者过滤列表时可复现：
+
+```text
+Samples: 1969
+Yaw: 3.6267, Pitch: 4.9066, Roll: 3.3740, MAE: 3.9691
+```
+
 日志保存到：
 
 ```text
@@ -221,6 +276,20 @@ Paper reference on AFLW2000: Yaw 3.63, Pitch 4.91, Roll 3.37, MAE 3.97
 ```
 
 将最后一行测试指标和日志截图/复制到实验报告中即可。
+
+如果想检查所有本地 checkpoint：
+
+```bash
+bash 6DRepNet/script/run_eval_aflw2000_all_checkpoints.sh
+```
+
+已经验证的 AFLW2000 结果如下：
+
+| checkpoint | 样本数 | Yaw | Pitch | Roll | MAE | 说明 |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `6DRepNet_300W_LP_AFLW2000.pth` | 1969 | 3.6267 | 4.9066 | 3.3740 | 3.9691 | 对应论文 Table 1 的 AFLW2000 结果 |
+| `6DRepNet_300W_LP_BIWI.pth` | 1969 | 3.8616 | 5.0512 | 3.5041 | 4.1390 | BIWI 方向权重，非 AFLW2000 最优 |
+| `6DRepNet_70_30_BIWI.pth` | 1969 | 14.7785 | 9.8006 | 8.8275 | 11.1356 | 对应 BIWI 70/30 设置，不适合 AFLW2000 |
 
 ## 8. 报告记录建议
 

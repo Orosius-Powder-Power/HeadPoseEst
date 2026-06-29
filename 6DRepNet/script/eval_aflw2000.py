@@ -24,7 +24,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Evaluate 6DRepNet on AFLW2000.")
     parser.add_argument("--snapshot", default=str(ROOT_DIR / "checkpoints" / "6DRepNet_300W_LP_AFLW2000.pth"))
     parser.add_argument("--data_dir", default=str(ROOT_DIR / "datasets" / "AFLW2000"))
-    parser.add_argument("--filename_list", default=str(ROOT_DIR / "datasets" / "AFLW2000" / "files.txt"))
+    parser.add_argument("--filename_list", default=str(ROOT_DIR / "datasets" / "AFLW2000" / "files_filtered_99.txt"))
     parser.add_argument("--gpu", type=int, default=0, help="CUDA device id. Use -1 for CPU.")
     parser.add_argument("--batch_size", type=int, default=64)
     parser.add_argument("--num_workers", type=int, default=2)
@@ -35,12 +35,27 @@ def ensure_aflw_file_list(data_dir: Path, filename_list: Path):
     if filename_list.is_file():
         return
 
-    image_names = sorted(path.stem for path in data_dir.glob("*.jpg") if (data_dir / f"{path.stem}.mat").is_file())
+    image_names = []
+    rejected = 0
+    for image_path in sorted(data_dir.glob("*.jpg")):
+        mat_path = data_dir / f"{image_path.stem}.mat"
+        if not mat_path.is_file():
+            continue
+
+        pose = utils.get_ypr_from_mat(str(mat_path))
+        pitch = pose[0] * 180 / np.pi
+        yaw = pose[1] * 180 / np.pi
+        roll = pose[2] * 180 / np.pi
+        if abs(pitch) <= 99 and abs(yaw) <= 99 and abs(roll) <= 99:
+            image_names.append(image_path.stem)
+        else:
+            rejected += 1
+
     if not image_names:
         raise FileNotFoundError(f"No AFLW2000 .jpg/.mat pairs found in {data_dir}")
     filename_list.parent.mkdir(parents=True, exist_ok=True)
     filename_list.write_text("\n".join(image_names) + "\n", encoding="utf-8")
-    print(f"Generated filename list: {filename_list} ({len(image_names)} samples)")
+    print(f"Generated filtered filename list: {filename_list} ({len(image_names)} samples, {rejected} rejected)")
 
 
 def load_model(snapshot: Path, device: torch.device) -> SixDRepNet:

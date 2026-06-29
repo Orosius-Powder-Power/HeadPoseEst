@@ -8,7 +8,6 @@ import argparse
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 import numpy as np
-from numpy.lib.function_base import _quantile_unchecked
 import cv2
 import torch
 import torch.nn as nn
@@ -42,6 +41,18 @@ def parse_args():
     parser.add_argument('--save_viz',
                         dest='save_viz', help='Save images with pose cube.',
                         default=False, type=bool)
+    parser.add_argument('--cam_width',
+                        dest='cam_width', help='Camera frame width.',
+                        default=640, type=int)
+    parser.add_argument('--cam_height',
+                        dest='cam_height', help='Camera frame height.',
+                        default=480, type=int)
+    parser.add_argument('--cam_fps',
+                        dest='cam_fps', help='Camera FPS.',
+                        default=30, type=int)
+    parser.add_argument('--cam_fourcc',
+                        dest='cam_fourcc', help='Camera FOURCC, e.g. MJPG or YUYV.',
+                        default='MJPG', type=str)
 
     args = parser.parse_args()
     return args
@@ -84,15 +95,27 @@ if __name__ == '__main__':
     # Test the Model
     model.eval()  # Change model to 'eval' mode (BN uses moving mean/var).
 
-    cap = cv2.VideoCapture(cam)
+    cap = cv2.VideoCapture(cam, cv2.CAP_V4L2)
+    if args.cam_fourcc:
+        cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*args.cam_fourcc[:4]))
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, args.cam_width)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, args.cam_height)
+    cap.set(cv2.CAP_PROP_FPS, args.cam_fps)
 
     # Check if the webcam is opened correctly
     if not cap.isOpened():
         raise IOError("Cannot open webcam")
+    print('Camera opened: id=%d, width=%d, height=%d, fps=%d, fourcc=%s' %
+          (cam, args.cam_width, args.cam_height, args.cam_fps, args.cam_fourcc))
 
     with torch.no_grad():
         while True:
             ret, frame = cap.read()
+            if not ret or frame is None:
+                print('Warning: failed to read a camera frame; retrying.')
+                if cv2.waitKey(30) == 27:
+                    break
+                continue
 
             faces = detector(frame)
 

@@ -1,10 +1,12 @@
 # Python caches and local environments
 __pycache__/
+**/__pycache__/
 *.py[cod]
 *.pyo
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.ipynb_checkpoints/
 .venv/
 venv/
 env/
@@ -21,6 +23,16 @@ dist/
 6DRepNet/logs/
 6DRepNet/runs/
 6DRepNet/wandb/
+
+# TokenHPE local runtime artifacts
+TokenHPE/.venv/
+TokenHPE/venv/
+TokenHPE/datasets/
+TokenHPE/checkpoints/
+TokenHPE/output/
+TokenHPE/logs/
+TokenHPE/runs/
+TokenHPE/wandb/
 
 # Large model/checkpoint files
 *.pth
@@ -51,6 +63,7 @@ dist/
 # OS/editor noise
 .DS_Store
 Thumbs.db
+*:Zone.Identifier
 .idea/
 .vscode/
 

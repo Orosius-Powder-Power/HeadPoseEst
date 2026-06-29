@@ -6,7 +6,6 @@ import os
 import argparse
 
 import numpy as np
-from numpy.lib.function_base import _quantile_unchecked
 import cv2
 import torch
 import torch.nn as nn
@@ -166,5 +165,4 @@ if __name__ == '__main__':
         # print('Vec1: %.4f, Vec2: %.4f, Vec3: %.4f, VMAE: %.4f' % (
         #     v1_err / total, v2_err / total, v3_err / total,
         #     (v1_err + v2_err + v3_err) / (total * 3)))
-
 

@@ -6,7 +6,6 @@ import os
 import argparse
 
 import numpy as np
-from numpy.lib.function_base import _quantile_unchecked
 import cv2
 import torch
 import torch.nn as nn
